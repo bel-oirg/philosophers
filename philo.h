@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 00:56:19 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/13 05:37:54 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/13 06:20:41 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,6 @@
 #define THINK	"is thinking"
 #define EAT		"is eating"
 #define DEAD	"died"
-
-//my_malloc.c
-typedef struct s_data
-{
-	void			*data;
-	struct s_data	*next;
-}	t_data;
-
-void	*my_malloc(size_t size, int mode);
 
 typedef struct s_philo
 {
@@ -58,7 +49,7 @@ typedef struct s_table
 
 //philo_utils
 // int			none_dead(t_table *table);
-void		smart_sleep(long interval);
+void		smart_sleep(long interval, t_table *table);
 void		philog(long long start, int id, const char *action);
 long long	time_now(void);
 

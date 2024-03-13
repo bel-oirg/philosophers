@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 03:23:16 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/13 06:00:28 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/13 06:20:32 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ void	ft_eat(t_philo *philo, t_table *table)
 	philo->last_meal = time_now();
 	philog(table->start, philo->id, EAT);
 	philo->eated++;
-	smart_sleep(table->tte);
+	smart_sleep(table->tte, table);
 	pthread_mutex_unlock(philo->r_fork);
 	pthread_mutex_unlock(philo->l_fork);
 }
@@ -66,7 +66,7 @@ void	ft_eat(t_philo *philo, t_table *table)
 void	ft_sleep(t_philo *philo)
 {
 	philog(philo->table->start, philo->id, SLEEP);
-	smart_sleep(philo->table->tts);
+	smart_sleep(philo->table->tts, philo->table);
 }
 
 void	ft_think(t_philo *philo)
@@ -94,6 +94,22 @@ void	destroy_philo(t_philo *philo)
 	table = philo->table;
 	while(++index < table->philos)
 		pthread_mutex_destroy(&(table->forks[index]));
+	exit(1);
+}
+
+int	check_full(t_philo *philo)
+{
+	int 	index;
+	t_table	*table;
+
+	index = 0;
+	table = philo->table;
+	while(index < table->philos)
+		if (philo[index].eated == philo->table->meals)
+			index++;
+	if (index == table->philos)
+		return (1);
+	return (0);
 }
 
 void	*begin(void *philo_raw)
@@ -110,7 +126,7 @@ void	*begin(void *philo_raw)
 			philog(philo->table->start, philo->id, DEAD);
 			destroy_philo(philo);
 		}
-		if (check_full(philo))
+		if (philo->id == philo->table->philos - 1 && check_full(philo->table->philo))
 			destroy_philo(philo);
 		ft_eat(philo, philo->table);
 		ft_sleep(philo);
