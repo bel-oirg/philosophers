@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 00:56:19 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/13 06:20:41 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/15 05:31:31 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ typedef struct s_philo
 typedef struct s_table
 {
 	pthread_mutex_t	forks[200];
+	pthread_mutex_t	*log;
 	int				philo_down;
 	long long		start;
 	long			philos;
@@ -50,7 +51,7 @@ typedef struct s_table
 //philo_utils
 // int			none_dead(t_table *table);
 void		smart_sleep(long interval, t_table *table);
-void		philog(long long start, int id, const char *action);
+void		philog(t_philo *philo, const char *action);
 long long	time_now(void);
 
 //utils
