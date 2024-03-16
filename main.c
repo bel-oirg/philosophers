@@ -6,77 +6,11 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 03:23:16 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/15 06:02:58 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/16 05:29:21 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-void	parse_args(int argc, char *argv[], t_table *table)
-{
-	table->philos = ft_atol(argv[1]);
-	table->ttd = ft_atol(argv[2]);
-	table->tte = ft_atol(argv[3]);
-	table->tts = ft_atol(argv[4]);
-	table->meals = -1;
-	if (argc == 6)
-		table->meals = ft_atol(argv[5]);
-	if (table->philos > 200)
-		err_w("We have only 200 chairs");
-	if (table->ttd < 60 || table->tte < 60 || table->tts < 60)
-		err_w("Enter higher values");
-}
-
-void	init_philo(t_table *table, t_philo *p)
-{
-	long	philos;
-	int		index;
-	
-	philos = table->philos;
-	table->philo_down = 0;
-	index = -1;
-	while(++index < philos)
-		pthread_mutex_init(&(table->forks[index]), NULL);
-	index = -1;
-	while (++index < philos)
-	{
-		p[index].table = table;
-		p[index].eated = 0;
-		p[index].id = index + 1;
-		(p + index)->r_fork = &(table->forks[index]);
-		(p + index)->l_fork = &(table->forks[abs_v(index - 1) % philos]);
-	}
-	pthread_mutex_init(table->log, NULL);
-	table->philo = p;
-}
-
-void	ft_eat(t_philo *philo)
-{
-	t_table *table;
-
-	table = philo->table;
-	pthread_mutex_lock(philo->l_fork);
-	philog(philo, FORK);
-	pthread_mutex_lock(philo->r_fork);
-	philog(philo, FORK);
-	philo->last_meal = time_now();
-	philog(philo, EAT);
-	philo->eated++;
-	smart_sleep(table->tte, table);
-	pthread_mutex_unlock(philo->l_fork);
-	pthread_mutex_unlock(philo->r_fork);
-}
-
-void	ft_sleep(t_philo *philo)
-{
-	philog(philo, SLEEP);
-	smart_sleep(philo->table->tts, philo->table);
-}
-
-void	ft_think(t_philo *philo)
-{
-	philog(philo, THINK);
-}
 
 int check_death(t_philo *philo)
 {
@@ -92,13 +26,15 @@ void	destroy_philo(t_philo *philo)
 {
 	t_table	*table;
 	int		index;
-	
+
 	index = -1;
 	table = philo->table;
 	while(++index < table->philos)
 		pthread_mutex_destroy(&(table->forks[index]));
+	index = -1;
+	while(++index < table->philos)
+		pthread_detach(philo[index].thread_id);
 	pthread_mutex_destroy(table->log);
-	exit(1);
 }
 
 int	check_full(t_philo *philo)
@@ -129,13 +65,44 @@ void	*monitor(void *philo_raw)
 	while (1)
 	{
 		if (check_death(philo))
-			philog(philo, DEAD), destroy_philo(philo);
+			return (philog(philo, DEAD), destroy_philo(philo), NULL);
 		else if (check_full(philo))
-			pthread_mutex_lock((philo->table->log)),
+		{
+			pthread_mutex_lock((philo->table->log));
 			destroy_philo(philo);
+			return (NULL);
+		}
 		usleep(100);
 	}
 	return (NULL);
+}
+
+void	ft_eat(t_philo *philo)
+{
+	t_table *table;
+
+	table = philo->table;
+	pthread_mutex_lock(philo->l_fork);
+	philog(philo, FORK);
+	pthread_mutex_lock(philo->r_fork);
+	philog(philo, FORK);
+	philo->last_meal = time_now();
+	philog(philo, EAT);
+	philo->eated++;
+	smart_sleep(table->tte, table);
+	pthread_mutex_unlock(philo->l_fork);
+	pthread_mutex_unlock(philo->r_fork);
+}
+
+void	ft_sleep(t_philo *philo)
+{
+	philog(philo, SLEEP);
+	smart_sleep(philo->table->tts, philo->table);
+}
+
+void	ft_think(t_philo *philo)
+{
+	philog(philo, THINK);
 }
 
 void	*begin(void *philo_raw)
@@ -171,10 +138,9 @@ int main(int argc, char *argv[])
 		p[index].last_meal = table.start;
 		pthread_create(&(p[index].thread_id), NULL, begin, &(p[index]));
 	}
-	pthread_create(&monitor_th, NULL, monitor, &p);
-	pthread_join(monitor_th, NULL);
-	// monitor(p);
 	index = -1;
 	while(++index < table.philos)
 		pthread_join(p[index].thread_id, NULL);
+	pthread_create(&monitor_th, NULL, monitor, &p);
+	pthread_join(monitor_th, NULL);
 }
