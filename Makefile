@@ -6,7 +6,7 @@
 #    By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/16 01:38:09 by bel-oirg          #+#    #+#              #
-#    Updated: 2024/03/16 04:56:00 by bel-oirg         ###   ########.fr        #
+#    Updated: 2024/03/16 21:35:28 by bel-oirg         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,7 @@ CFLAGS = -Wall -Wextra -Werror -pthread
 
 RM = rm -rf
 
-SRCS = 	main.c philo_utils.c utils.c parse_init.c
+SRCS = 	main.c philo_utils.c utils.c parse_init.c checkers.c
 
 OBJS = $(SRCS:.c=.o)
 

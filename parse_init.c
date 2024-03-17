@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/16 01:53:08 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/16 02:00:41 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/17 09:27:48 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,40 +31,45 @@ long	ft_atol(char *str)
 	return (sign * num);
 }
 
-void	init_philo(t_table *table, t_philo *p)
+int	init_philo(t_table *table, t_philo *p)
 {
 	long	philos;
 	int		index;
 	
 	philos = table->philos;
 	table->philo_down = 0;
-	index = -1;
-	while(++index < philos)
-		pthread_mutex_init(&(table->forks[index]), NULL);
-	index = -1;
-	while (++index < philos)
+	index = philos;
+	while (--index >= 0)
 	{
+		if (pthread_mutex_init(&(table->forks[index]), NULL))
+			return (err_w("Mutex init"), 1);
 		p[index].table = table;
 		p[index].eated = 0;
-		p[index].id = index + 1;
-		(p + index)->r_fork = &(table->forks[index]);
-		(p + index)->l_fork = &(table->forks[abs_v(index - 1) % philos]);
+		p[index].id = index ;
+		p[index].r_fork = &(table->forks[(index + 1) % philos]);
+		p[index].l_fork = &(table->forks[index]);
 	}
-	pthread_mutex_init(table->log, NULL);
+	pthread_mutex_init(&(table->m_death), NULL);
+	pthread_mutex_init(&(table->log), NULL);
+	if (pthread_mutex_init(&(table->log), NULL))
+		return (err_w("Mutex init"), 1);
 	table->philo = p;
+	table->full = 0;
+	return (0);
 }
 
-void	parse_args(int argc, char *argv[], t_table *table)
+int	parse_args(char *argv[], t_table *table)
 {
 	table->philos = ft_atol(argv[1]);
 	table->ttd = ft_atol(argv[2]);
 	table->tte = ft_atol(argv[3]);
 	table->tts = ft_atol(argv[4]);
 	table->meals = -1;
-	if (argc == 6)
+	if (argv[5])
 		table->meals = ft_atol(argv[5]);
 	if (table->philos > 200)
-		err_w("We have only 200 chairs");
+		return (err_w("We have only 200 chairs"), 1);
 	if (table->ttd < 60 || table->tte < 60 || table->tts < 60)
-		err_w("Enter higher values");
+		return (err_w("Enter higher values"), 1);
+	return (0);
 }

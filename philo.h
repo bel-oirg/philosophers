@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 00:56:19 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/16 02:05:44 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/17 09:59:12 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ typedef struct s_philo
 typedef struct s_table
 {
 	pthread_mutex_t	forks[200];
-	pthread_mutex_t	*log;
+	pthread_mutex_t	m_death;
+	pthread_mutex_t	log;
 	t_philo			*philo;
 	long long		start;
 	long long		ttd;
@@ -45,19 +46,27 @@ typedef struct s_table
 	long			meals;
 	long			philos;
 	int				philo_down;
+	int				full;
 }	t_table;
 
 //philo_utils
-void		smart_sleep(long interval, t_table *table);
+int			smart_sleep(long interval, t_table *table);
 void		philog(t_philo *philo, const char *action);
 long long	time_now(void);
 
 //utils
 void	err_w(char *str);
-int		abs_v(int num);
-void	check_args(int argc);
+int		check_args(int argc);
+int		ft_eat(t_philo *philo);
+int		ft_sleep(t_philo *philo);
+void	ft_think(t_philo *philo);
 
 //parse_init
 long	ft_atol(char *str);
-void	init_philo(t_table *table, t_philo *p);
-void	parse_args(int argc, char *argv[], t_table *table);
+int		init_philo(t_table *table, t_philo *p);
+int		parse_args(char *argv[], t_table *table);
+
+//checkers.c
+int		check_full(t_philo *philo);
+int		check_death(t_philo *philo);
+void	destroy_philo(t_table *table);

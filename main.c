@@ -6,141 +6,79 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 03:23:16 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/16 05:29:21 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/17 09:59:24 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
-
-int check_death(t_philo *philo)
-{
-	long long fasting;
-
-	fasting = time_now() - philo->last_meal;
-	if (fasting > philo->table->ttd)
-		philo->table->philo_down = 1;
-	return (philo->table->philo_down);
-}
-
-void	destroy_philo(t_philo *philo)
-{
-	t_table	*table;
-	int		index;
-
-	index = -1;
-	table = philo->table;
-	while(++index < table->philos)
-		pthread_mutex_destroy(&(table->forks[index]));
-	index = -1;
-	while(++index < table->philos)
-		pthread_detach(philo[index].thread_id);
-	pthread_mutex_destroy(table->log);
-}
-
-int	check_full(t_philo *philo)
-{
-	int 	index;
-	t_table	*table;
-
-	if (philo->table->meals < 0)
-		return (0);
-	index = -1;
-	table = philo->table;
-	philo = philo->table->philo;
-	while(++index < table->philos)
-	{
-		if (philo[index].eated < table->meals)
-			break;
-	}
-	if (index == table->philos)
-		return (1);
-	return (0);
-}
-
-void	*monitor(void *philo_raw)
-{
-	t_philo *philo;
-
-	philo = (t_philo *)philo_raw;
-	while (1)
-	{
-		if (check_death(philo))
-			return (philog(philo, DEAD), destroy_philo(philo), NULL);
-		else if (check_full(philo))
-		{
-			pthread_mutex_lock((philo->table->log));
-			destroy_philo(philo);
-			return (NULL);
-		}
-		usleep(100);
-	}
-	return (NULL);
-}
-
-void	ft_eat(t_philo *philo)
-{
-	t_table *table;
-
-	table = philo->table;
-	pthread_mutex_lock(philo->l_fork);
-	philog(philo, FORK);
-	pthread_mutex_lock(philo->r_fork);
-	philog(philo, FORK);
-	philo->last_meal = time_now();
-	philog(philo, EAT);
-	philo->eated++;
-	smart_sleep(table->tte, table);
-	pthread_mutex_unlock(philo->l_fork);
-	pthread_mutex_unlock(philo->r_fork);
-}
-
-void	ft_sleep(t_philo *philo)
-{
-	philog(philo, SLEEP);
-	smart_sleep(philo->table->tts, philo->table);
-}
-
-void	ft_think(t_philo *philo)
-{
-	philog(philo, THINK);
-}
 
 void	*begin(void *philo_raw)
 {
 	t_philo *philo;
 
 	philo = (t_philo *) philo_raw;
-	if (!(philo->id % 2))
-		usleep(1500);
-	while(1)
+	if (philo->id % 2)
+		usleep(15000);
+	while(!philo->table->philo_down)
 	{
-		ft_eat(philo);
+		if (ft_eat(philo))
+			break;
 		ft_sleep(philo);
 		ft_think(philo);
 	}
 	return (NULL);
 }
 
-int main(int argc, char *argv[])
+void	supervisor(t_philo *philo)
 {
-	pthread_t monitor_th; 
-	t_table	table;
-	t_philo p[200];
+	t_table	*table;
 	int		index;
 
-	check_args(argc);
-	parse_args(argc, argv, &table);
-	init_philo(&table, p);
-	index = -1;
-	table.start = time_now();
-	while(++index < table.philos)
+	table = philo->table;
+	while(!table->full)
 	{
-		p[index].last_meal = table.start;
-		pthread_create(&(p[index].thread_id), NULL, begin, &(p[index]));
+		index = -1;
+		while(++index < table->philos)
+		{
+			pthread_mutex_lock(&(table->m_death));
+			if (check_death(&philo[index]))
+				return ;
+			pthread_mutex_unlock(&(table->m_death));
+		}
+		usleep(100);
 	}
+}
+
+int	nietzsche_party(t_table *table)
+{
+	t_philo	*philo;
+	int		index;
+	
 	index = -1;
-	while(++index < table.philos)
-		pthread_join(p[index].thread_id, NULL);
-	pthread_create(&monitor_th, NULL, monitor, &p);
-	pthread_join(monitor_th, NULL);
+	table->start = time_now();
+	philo = table->philo;
+	while (++index < table->philos)
+	{
+		if (pthread_create(&(philo[index].thread_id), NULL, begin, &(philo[index])))
+			return (err_w("Failed to create threads"), 1);
+		philo[index].last_meal = time_now();
+	}
+	supervisor(philo);
+	destroy_philo(table);
+	return (0);
+}
+
+int main(int argc, char *argv[])
+{
+	t_table	table;
+	t_philo p[200];
+
+	if (check_args(argc))
+		return (1);
+	if (parse_args(argv, &table))
+		return (1);
+	if (init_philo(&table, p))
+		return (1);
+	if (nietzsche_party(&table))
+		return (1);
 }
