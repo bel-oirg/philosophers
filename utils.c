@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/12 21:40:44 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/17 09:59:00 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/19 04:43:52 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,25 +29,28 @@ int		ft_eat(t_philo *philo)
 	t_table *table;
 
 	table = philo->table;
+
 	pthread_mutex_lock(philo->l_fork);
 	philog(philo, FORK);
-	
+
 	pthread_mutex_lock(philo->r_fork);
 	philog(philo, FORK);
 
 	philog(philo, EAT);
 	philo->last_meal = time_now();
-	smart_sleep(philo->table->tte, philo->table);
-	philo->eated++;
-	if (check_full(philo))
+	if (!smart_sleep(philo->table->tte, philo->table))
 	{
-		pthread_mutex_lock(&(table->log));
-		table->full = 1;
-		// return (1);
+		// pthread_mutex_lock(&(table->m_meals));
+		philo->eated++;
+		if (check_full(philo))
+			pthread_mutex_lock(&(table->log));
+		// pthread_mutex_unlock(&(table->m_meals));
 	}
 	pthread_mutex_unlock(philo->r_fork);
 	pthread_mutex_unlock(philo->l_fork);
-	return (table->full);
+	if (table->full || table->philo_down)
+		return (1);
+	return (0);
 }
 
 int	ft_sleep(t_philo *philo)

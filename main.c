@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 03:23:16 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/17 09:59:24 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/19 02:09:20 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,15 +15,18 @@
 void	*begin(void *philo_raw)
 {
 	t_philo *philo;
+	t_table	*table;
 
 	philo = (t_philo *) philo_raw;
+	table = philo->table;
 	if (philo->id % 2)
 		usleep(15000);
-	while(!philo->table->philo_down)
+	while(!table->philo_down || !table->full)
 	{
 		if (ft_eat(philo))
 			break;
-		ft_sleep(philo);
+		if (ft_sleep(philo))
+			break;
 		ft_think(philo);
 	}
 	return (NULL);
@@ -38,7 +41,7 @@ void	supervisor(t_philo *philo)
 	while(!table->full)
 	{
 		index = -1;
-		while(++index < table->philos)
+		while(++index < table->philos && !table->philo_down)
 		{
 			pthread_mutex_lock(&(table->m_death));
 			if (check_death(&philo[index]))

@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/16 21:34:01 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/17 09:33:50 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/19 05:10:25 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 int	check_full(t_philo *philo)
 {
-	int 	index;
 	t_table	*table;
+	int		index;
 
 	philo = philo->table->philo;
 	table = philo->table;
@@ -25,23 +25,24 @@ int	check_full(t_philo *philo)
 	while(++index < table->philos)
 	{
 		if (philo[index].eated < table->meals)
-			return (0);
+				return (table->full);
 	}
-	return (1);
+	table->full = 1;
+	return (table->full);
 }
 
 int check_death(t_philo *philo)
 {
-	long long fasting;
+	long long	fasting;
 
 	fasting = time_now() - philo->last_meal;
 	if (philo->table->philo_down || fasting > philo->table->ttd)
 	{
-		philo->table->philo_down = 1;
 		philog(philo, DEAD);
-		return (1);
+		philo->table->philo_down = 1;
+		
 	}
-	return (0);
+	return (philo->table->philo_down);
 }
 
 void	destroy_philo(t_table *table)
@@ -55,13 +56,10 @@ void	destroy_philo(t_table *table)
 	index = -1;
 	while(++index < table->philos)
 		pthread_join(philo[index].thread_id, NULL);
-
 	index = -1;
 	while(++index < table->philos)
+		pthread_detach(philo[index].thread_id),
 		pthread_mutex_destroy(&(table->forks[index]));
 	pthread_mutex_destroy(&(table->log));
 	pthread_mutex_destroy(&(table->m_death)); 
-	// index = -1;
-	// while(++index < table->philos)
-	// 	pthread_detach(philo[index].thread_id);
 }
