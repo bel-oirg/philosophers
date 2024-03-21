@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 00:56:19 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/18 05:15:51 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/21 13:55:47 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,17 +37,15 @@ typedef struct s_table
 {
 	pthread_mutex_t	forks[200];
 	pthread_mutex_t	m_death;
-	pthread_mutex_t m_meals;
 	pthread_mutex_t	log;
-	t_philo			*philo;
 	long long		start;
 	long long		ttd;
 	long long		tte;
 	long long		tts;
+	t_philo			*philo;
 	long			meals;
 	long			philos;
 	int				philo_down;
-	int				full;
 }	t_table;
 
 //philo_utils
@@ -63,7 +61,6 @@ int			ft_sleep(t_philo *philo);
 void		ft_think(t_philo *philo);
 
 //parse_init
-long		ft_atol(char *str);
 int			init_philo(t_table *table, t_philo *p);
 int			parse_args(char *argv[], t_table *table);
 

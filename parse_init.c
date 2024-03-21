@@ -6,13 +6,13 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/16 01:53:08 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/19 04:37:11 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/21 13:52:16 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long	ft_atol(char *str)
+static long	ft_atol(char *str)
 {
 	long	num;
 	int		sign;
@@ -42,19 +42,18 @@ int	init_philo(t_table *table, t_philo *p)
 	while (--index >= 0)
 	{
 		if (pthread_mutex_init(&(table->forks[index]), NULL))
-			return (err_w("Mutex init"), 1);
+			return (err_w("Mutex failed to init"), 1);
 		p[index].table = table;
 		p[index].eated = 0;
 		p[index].id = index ;
 		p[index].r_fork = &(table->forks[(index + 1) % philos]);
 		p[index].l_fork = &(table->forks[index]);
 	}
-	pthread_mutex_init(&(table->m_death), NULL);
-	pthread_mutex_init(&(table->m_meals), NULL);
+	if (pthread_mutex_init(&(table->m_death), NULL))
+		return (err_w("Mutex failed to init"), 1);
 	if (pthread_mutex_init(&(table->log), NULL))
-		return (err_w("Mutex init"), 1);
+		return (err_w("Mutex failed to init"), 1);
 	table->philo = p;
-	table->full = 0;
 	return (0);
 }
 

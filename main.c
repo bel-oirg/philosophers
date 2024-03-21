@@ -6,13 +6,26 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 03:23:16 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/19 02:09:20 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/21 13:52:07 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	*begin(void *philo_raw)
+static void	supervisor(t_philo *philo)
+{
+	t_table	*table;
+
+	table = philo->table;
+	while (!table->philo_down)
+	{
+		usleep(100);
+		check_death(philo);
+		check_full(philo);
+	}
+}
+
+static void	*begin(void *philo_raw)
 {
 	t_philo *philo;
 	t_table	*table;
@@ -21,38 +34,18 @@ void	*begin(void *philo_raw)
 	table = philo->table;
 	if (philo->id % 2)
 		usleep(15000);
-	while(!table->philo_down || !table->full)
+	while(!table->philo_down)
 	{
-		if (ft_eat(philo))
+		ft_eat(philo);
+		if (philo->eated == table->meals)
 			break;
-		if (ft_sleep(philo))
-			break;
+		ft_sleep(philo);
 		ft_think(philo);
 	}
 	return (NULL);
 }
 
-void	supervisor(t_philo *philo)
-{
-	t_table	*table;
-	int		index;
-
-	table = philo->table;
-	while(!table->full)
-	{
-		index = -1;
-		while(++index < table->philos && !table->philo_down)
-		{
-			pthread_mutex_lock(&(table->m_death));
-			if (check_death(&philo[index]))
-				return ;
-			pthread_mutex_unlock(&(table->m_death));
-		}
-		usleep(100);
-	}
-}
-
-int	nietzsche_party(t_table *table)
+static int	nietzsche_party(t_table *table)
 {
 	t_philo	*philo;
 	int		index;

@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/16 21:34:01 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/19 05:10:25 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/21 02:42:18 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,22 +25,30 @@ int	check_full(t_philo *philo)
 	while(++index < table->philos)
 	{
 		if (philo[index].eated < table->meals)
-				return (table->full);
+				return (table->philo_down);
 	}
-	table->full = 1;
-	return (table->full);
+	table->philo_down = 1;
+	return (table->philo_down);
 }
 
 int check_death(t_philo *philo)
 {
 	long long	fasting;
+	t_table		*table;
+	int			index;
 
-	fasting = time_now() - philo->last_meal;
-	if (philo->table->philo_down || fasting > philo->table->ttd)
+	table = philo->table;
+	philo = table->philo;
+	index = -1;
+	while(++index < table->philos)
 	{
-		philog(philo, DEAD);
-		philo->table->philo_down = 1;
-		
+	 	fasting = time_now() - philo->last_meal;
+		if (fasting > philo[index].table->ttd)
+		{
+			philog(philo, DEAD);
+			philo->table->philo_down = 1;
+			break;
+		}
 	}
 	return (philo->table->philo_down);
 }
