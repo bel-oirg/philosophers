@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/16 01:53:08 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/21 13:52:16 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/21 13:58:51 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ int	init_philo(t_table *table, t_philo *p)
 			return (err_w("Mutex failed to init"), 1);
 		p[index].table = table;
 		p[index].eated = 0;
-		p[index].id = index ;
+		p[index].id = index + 1;
 		p[index].r_fork = &(table->forks[(index + 1) % philos]);
 		p[index].l_fork = &(table->forks[index]);
 	}

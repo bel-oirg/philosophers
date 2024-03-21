@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/12 21:40:44 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/21 13:50:04 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/21 14:20:46 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,8 @@ int		ft_eat(t_philo *philo)
 	table = philo->table;
 	pthread_mutex_lock(philo->l_fork);
 	philog(philo, FORK);
+	if (table->philos == 1)
+		return (smart_sleep(table->ttd, table), 1);
 	pthread_mutex_lock(philo->r_fork);
 	philog(philo, FORK);
 	philog(philo, EAT);
