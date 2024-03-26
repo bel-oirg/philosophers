@@ -6,15 +6,17 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 00:56:19 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/21 13:55:47 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/25 16:51:53 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <unistd.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <semaphore.h>
 
 #define FORK	"has taken a fork"
 #define SLEEP	"is sleeping"
@@ -24,20 +26,22 @@
 
 typedef struct s_philo
 {
-	pthread_mutex_t	*l_fork;
-	pthread_mutex_t	*r_fork;
+	sem_t	*l_fork;
+	sem_t	*r_fork;
 	struct s_table	*table;
 	long long		last_meal;
-	pthread_t		thread_id;
+	pid_t			pid_id;
+	// pthread_t		thread_id;
+	int				forked;
 	int				eated;
 	int				id;
 }	t_philo;
 
 typedef struct s_table
 {
-	pthread_mutex_t	forks[200];
-	pthread_mutex_t	m_death;
-	pthread_mutex_t	log;
+	sem_t			*forks[200];
+	sem_t			*log;
+	sem_t			*the_end;
 	long long		start;
 	long long		ttd;
 	long long		tte;
@@ -63,6 +67,7 @@ void		ft_think(t_philo *philo);
 //parse_init
 int			init_philo(t_table *table, t_philo *p);
 int			parse_args(char *argv[], t_table *table);
+char		*itoa(int index);
 
 //checkers.c
 int			check_full(t_philo *philo);

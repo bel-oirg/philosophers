@@ -6,13 +6,13 @@
 #    By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/16 01:38:09 by bel-oirg          #+#    #+#              #
-#    Updated: 2024/03/21 03:25:05 by bel-oirg         ###   ########.fr        #
+#    Updated: 2024/03/22 12:11:29 by bel-oirg         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME = philo  
 
-CFLAGS = -Wall -Wextra -Werror -pthread #-fsanitize=thread
+CFLAGS = -Wall -Wextra -Werror -pthread# -fsanitize=thread -g
 
 RM = rm -rf
 

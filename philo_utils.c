@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/12 21:41:59 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/21 13:34:03 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/25 16:34:24 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,13 +30,11 @@ void	philog(t_philo *philo, const char *action)
 	id = philo->id;
 	start = philo->table->start;
 	interval = time_now() - start;
-	if (philo->table->philo_down)
-		return ;
-	pthread_mutex_lock(&(philo->table->log));
+	sem_wait((philo->table->log));
 	(!philo->table->philo_down) && (printf("%lld %d %s\n", interval, id, action));
 	if (*action == 'd')
 		philo->table->philo_down = 1;
-	pthread_mutex_unlock(&(philo->table->log));
+	sem_post((philo->table->log));
 }
 
 int	smart_sleep(long interval, t_table *table)

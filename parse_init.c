@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/16 01:53:08 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/21 13:58:51 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/25 17:46:37 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,35 @@ static long	ft_atol(char *str)
 	return (sign * num);
 }
 
+int count_int(int num)
+{
+	int counter;
+
+	counter = 0;
+	while(num / 10)
+	{
+		counter++;
+		num /= 10;
+	}
+	return (counter + 1);
+}
+char *itoa(int index)
+{
+	char	*out;
+	int		size;
+
+	size = count_int(index);
+	out = malloc(size);
+	if (!out)
+		return (NULL);
+	while(--size >= 0)
+	{
+		out[size] = index % 10 + '0';
+		index /= 10;
+	}
+	return (out);
+}
+
 int	init_philo(t_table *table, t_philo *p)
 {
 	long	philos;
@@ -41,18 +70,24 @@ int	init_philo(t_table *table, t_philo *p)
 	index = philos;
 	while (--index >= 0)
 	{
-		if (pthread_mutex_init(&(table->forks[index]), NULL))
-			return (err_w("Mutex failed to init"), 1);
+		sem_unlink(itoa(index));
+		table->forks[index] = sem_open(itoa(index), O_CREAT | O_EXCL, 0644, 1);
+		if (table->forks[index] == SEM_FAILED)
+			err_w("Failed to open semaphore");
 		p[index].table = table;
 		p[index].eated = 0;
 		p[index].id = index + 1;
-		p[index].r_fork = &(table->forks[(index + 1) % philos]);
-		p[index].l_fork = &(table->forks[index]);
+		p[index].r_fork = (table->forks[(index + 1) % philos]);
+		p[index].l_fork = (table->forks[index]);
 	}
-	if (pthread_mutex_init(&(table->m_death), NULL))
-		return (err_w("Mutex failed to init"), 1);
-	if (pthread_mutex_init(&(table->log), NULL))
-		return (err_w("Mutex failed to init"), 1);
+	sem_unlink("sem_log");
+	sem_unlink("sem_the_end");
+	table->log = sem_open("sem_log", O_CREAT | O_EXCL, 0644, 1);
+	if (table->log == SEM_FAILED)
+		err_w("Failed to open semaphore");
+	table->the_end = sem_open("sem_the_end", O_CREAT | O_EXCL, 0644, 0);
+	if (table->the_end == SEM_FAILED)
+		err_w("Failed to open semaphore");
 	table->philo = p;
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/12 21:40:44 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/21 14:20:46 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/23 18:31:23 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 void	err_w(char *str)
 {
 	printf("[-] %s\n", str);
+	exit(1);
 }
 
 int	check_args(int argc)
@@ -29,18 +30,18 @@ int		ft_eat(t_philo *philo)
 	t_table *table;
 
 	table = philo->table;
-	pthread_mutex_lock(philo->l_fork);
+	sem_wait(philo->l_fork);
 	philog(philo, FORK);
 	if (table->philos == 1)
 		return (smart_sleep(table->ttd, table), 1);
-	pthread_mutex_lock(philo->r_fork);
+	sem_wait(philo->r_fork);
 	philog(philo, FORK);
 	philog(philo, EAT);
 	philo->last_meal = time_now();
 	if (!smart_sleep(philo->table->tte, philo->table))
 		philo->eated++;
-	pthread_mutex_unlock(philo->r_fork);
-	pthread_mutex_unlock(philo->l_fork);
+	sem_post(philo->r_fork);
+	sem_post(philo->l_fork);
 	return (0);
 }
 
