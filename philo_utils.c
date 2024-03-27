@@ -6,11 +6,28 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/12 21:41:59 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/25 16:34:24 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/27 02:08:58 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
+
+void	destroy_philo(t_table *table)
+{
+	t_philo	*philo;
+	int		index;
+
+	index = -1;
+	philo = table->philo;
+	while(++index < table->philos)
+		kill(table->philo[index].pid_id, SIGKILL),
+		sem_close(table->forks[index]),
+		sem_unlink(itoa(index));
+	sem_close(table->log);
+	sem_unlink("sem_log");
+	sem_close(table->the_end);
+	sem_unlink("sem_the_end");
+}
 
 long long	time_now(void)
 {
@@ -33,7 +50,10 @@ void	philog(t_philo *philo, const char *action)
 	sem_wait((philo->table->log));
 	(!philo->table->philo_down) && (printf("%lld %d %s\n", interval, id, action));
 	if (*action == 'd')
+	{
 		philo->table->philo_down = 1;
+		return ;
+	}
 	sem_post((philo->table->log));
 }
 

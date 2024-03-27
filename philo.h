@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 00:56:19 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/25 16:51:53 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/27 02:38:48 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,12 @@
 
 typedef struct s_philo
 {
-	sem_t	*l_fork;
-	sem_t	*r_fork;
+	sem_t			*l_fork;
+	sem_t			*r_fork;
 	struct s_table	*table;
 	long long		last_meal;
 	pid_t			pid_id;
-	// pthread_t		thread_id;
-	int				forked;
+	// int				forked;
 	int				eated;
 	int				id;
 }	t_philo;
@@ -56,6 +55,7 @@ typedef struct s_table
 int			smart_sleep(long interval, t_table *table);
 void		philog(t_philo *philo, const char *action);
 long long	time_now(void);
+void		destroy_philo(t_table *table);
 
 //utils
 void		err_w(char *str);
@@ -64,12 +64,7 @@ int			ft_eat(t_philo *philo);
 int			ft_sleep(t_philo *philo);
 void		ft_think(t_philo *philo);
 
-//parse_init
-int			init_philo(t_table *table, t_philo *p);
-int			parse_args(char *argv[], t_table *table);
+//init
+void			init_philo(t_table *table, t_philo *p);
 char		*itoa(int index);
-
-//checkers.c
-int			check_full(t_philo *philo);
-int			check_death(t_philo *philo);
-void		destroy_philo(t_table *table);
+long		ft_atol(char *str);
