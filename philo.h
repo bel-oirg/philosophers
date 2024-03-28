@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 00:56:19 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/27 19:58:12 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/28 03:46:37 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ typedef struct s_philo
 
 typedef struct s_table
 {
-	sem_t			*forks[200];
+	sem_t			*forks;
 	sem_t			*log;
 	sem_t			*the_end;
 	long long		start;
@@ -53,17 +53,12 @@ typedef struct s_table
 //philo_utils
 void		smart_sleep(long interval, t_table *table);
 void		philog(t_philo *philo, const char *action);
-long long	time_now(void);
-void		destroy_philo(t_table *table);
+void		begin(t_philo *philo);
+long		ft_atol(char *str);
 
 //utils
+long long	time_now(void);
 void		err_w(char *str);
-int			check_args(int argc);
 void		ft_eat(t_philo *philo);
 void		ft_sleep(t_philo *philo);
 void		ft_think(t_philo *philo);
-
-//init
-void		init_philo(t_table *table, t_philo *p);
-char		*itoa(int index);
-long		ft_atol(char *str);

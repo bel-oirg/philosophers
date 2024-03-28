@@ -6,40 +6,63 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/12 21:41:59 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/27 21:51:14 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/28 03:49:02 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-void	destroy_philo(t_table *table)
+static void	*check_death(void *philo_raw)
 {
-	t_philo	*philo;
-	int		index;
-	char	*indexed;
+	long long	fasting;
+	t_table		*table;
+	t_philo		*philo;
+	int			index;
 
-	index = -1;
-	philo = table->philo;
-	while (++index < table->philos)
+	philo = (t_philo *)philo_raw;
+	table = philo->table;
+	while (1)
 	{
-		kill(table->philo[index].pid_id, SIGKILL);
-		sem_close(table->forks[index]);
-		indexed = itoa(index);
-		sem_unlink(indexed);
-		free(indexed);
+		fasting = time_now() - philo->last_meal;
+		if (fasting > table->ttd)
+		{
+			philog(philo, DEAD);
+			index = -1;
+			while (++index < table->philos)
+				if (sem_post(philo->table->the_end) == -1)
+					err_w("Sem post failed - the_end");
+			break ;
+		}
+		usleep(100);
 	}
-	sem_close(table->log);
-	sem_unlink("sem_log");
-	sem_close(table->the_end);
-	sem_unlink("sem_the_end");
+	return (NULL);
 }
 
-long long	time_now(void)
+void	begin(t_philo *philo)
 {
-	struct timeval	tv;
+	pthread_t	monitor_th;
+	t_table		*table;
 
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+	table = philo->table;
+	philo->last_meal = time_now();
+	if (pthread_create(&monitor_th, NULL, check_death, philo))
+		err_w("Failed to create a thread - monitor_th");
+	if (pthread_detach(monitor_th))
+		err_w("Failed to detach a thread - monitor_th");
+	if (philo->id % 2)
+		usleep(15000);
+	while (1)
+	{
+		ft_eat(philo);
+		if (philo->eated == table->meals)
+		{
+			if (sem_post(table->the_end) == -1)
+				err_w("Sem post failed - the_end");
+			exit(0);
+		}
+		ft_sleep(philo);
+		ft_think(philo);
+	}
 }
 
 void	philog(t_philo *philo, const char *action)
@@ -52,7 +75,7 @@ void	philog(t_philo *philo, const char *action)
 	start = philo->table->start;
 	interval = time_now() - start;
 	if (sem_wait((philo->table->log)))
-		err_w("Failed to wait a semaphore");
+		err_w("Failed to wait a semaphore - log");
 	if (!philo->table->philo_down)
 		printf("%lld %d %s\n", interval, id, action);
 	if (*action == 'd')
@@ -61,7 +84,7 @@ void	philog(t_philo *philo, const char *action)
 		return ;
 	}
 	if (sem_post((philo->table->log)))
-		err_w("Sem post failed");
+		err_w("Sem post failed - log");
 }
 
 void	smart_sleep(long interval, t_table *table)
@@ -71,4 +94,23 @@ void	smart_sleep(long interval, t_table *table)
 	now = time_now();
 	while (time_now() - now <= interval)
 		usleep(table->philos * 2);
+}
+
+long	ft_atol(char *str)
+{
+	long	num;
+	int		sign;
+
+	while (*str == ' ' || *str == '\t')
+		str++;
+	sign = 1;
+	if (*str == '-' || *str == '+')
+		if (*str++ == '-')
+			sign = -1;
+	num = 0;
+	while (*str >= '0' && *str <= '9')
+		num = num * 10 + *str++ - '0';
+	if (sign * num < 0)
+		err_w("Enter positive values");
+	return (sign * num);
 }

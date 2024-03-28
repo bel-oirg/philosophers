@@ -6,17 +6,17 @@
 #    By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/16 01:38:09 by bel-oirg          #+#    #+#              #
-#    Updated: 2024/03/27 20:09:39 by bel-oirg         ###   ########.fr        #
+#    Updated: 2024/03/28 03:46:08 by bel-oirg         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-NAME = philo  
+NAME = philo_bonus
 
-CFLAGS = -Wall -Wextra -Werror -pthread #-fsanitize=thread
+CFLAGS = -Wall -Wextra -Werror -pthread# -fsanitize=thread
 
 RM = rm -rf
 
-SRCS = 	main.c philo_utils.c utils.c init.c
+SRCS = 	main.c philo_utils.c utils.c
 
 OBJS = $(SRCS:.c=.o)
 
