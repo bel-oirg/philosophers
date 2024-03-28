@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/16 01:53:08 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/27 02:38:53 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/27 21:26:48 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ long	ft_atol(char *str)
 {
 	long	num;
 	int		sign;
-	
+
 	while (*str == ' ' || *str == '\t')
 		str++;
 	sign = 1;
@@ -31,22 +31,22 @@ long	ft_atol(char *str)
 	return (sign * num);
 }
 
-char *itoa(int index)
+char	*itoa(int index)
 {
 	char	*out;
 	int		counter;
 
 	counter = 1;
-	while(index / 10)
+	while (index / 10)
 	{
 		counter++;
 		index /= 10;
 	}
 	out = malloc(counter + 1);
 	if (!out)
-		return (NULL);
+		err_w("Malloc failed to allocate");
 	out[counter] = 0;
-	while(--counter >= 0)
+	while (--counter >= 0)
 	{
 		out[counter] = index % 10 + '0';
 		index /= 10;
@@ -64,16 +64,17 @@ static void	init_semaphores(t_table *table)
 	{
 		indexed = itoa(index);
 		sem_unlink(indexed);
-		table->forks[index] = sem_open(indexed, O_CREAT | O_EXCL, 0644, 1);
+		table->forks[index] = sem_open(indexed, O_CREAT, 0644, 1);
 		free(indexed);
 		if (table->forks[index] == SEM_FAILED)
 			err_w("Failed to open semaphore");
 	}
-	sem_unlink("sem_log"), sem_unlink("sem_the_end");
-	table->log = sem_open("sem_log", O_CREAT | O_EXCL, 0644, 1);
+	sem_unlink("sem_log");
+	sem_unlink("sem_the_end");
+	table->log = sem_open("sem_log", O_CREAT, 0644, 1);
 	if (table->log == SEM_FAILED)
 		err_w("Failed to open semaphore");
-	table->the_end = sem_open("sem_the_end", O_CREAT | O_EXCL, 0644, 0);
+	table->the_end = sem_open("sem_the_end", O_CREAT, 0644, 0);
 	if (table->the_end == SEM_FAILED)
 		err_w("Failed to open semaphore");
 }
@@ -82,7 +83,7 @@ void	init_philo(t_table *table, t_philo *p)
 {
 	long	philos;
 	int		index;
-	
+
 	philos = table->philos;
 	table->philo_down = 0;
 	index = philos;

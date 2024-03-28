@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 00:56:19 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/27 02:38:48 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/27 19:58:12 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,13 @@
 
 typedef struct s_philo
 {
-	sem_t			*l_fork;
-	sem_t			*r_fork;
-	struct s_table	*table;
-	long long		last_meal;
-	pid_t			pid_id;
-	// int				forked;
-	int				eated;
-	int				id;
+	struct s_table		*table;
+	_Atomic long long	last_meal;
+	sem_t				*l_fork;
+	sem_t				*r_fork;
+	pid_t				pid_id;
+	int					eated;
+	int					id;
 }	t_philo;
 
 typedef struct s_table
@@ -52,7 +51,7 @@ typedef struct s_table
 }	t_table;
 
 //philo_utils
-int			smart_sleep(long interval, t_table *table);
+void		smart_sleep(long interval, t_table *table);
 void		philog(t_philo *philo, const char *action);
 long long	time_now(void);
 void		destroy_philo(t_table *table);
@@ -60,11 +59,11 @@ void		destroy_philo(t_table *table);
 //utils
 void		err_w(char *str);
 int			check_args(int argc);
-int			ft_eat(t_philo *philo);
-int			ft_sleep(t_philo *philo);
+void		ft_eat(t_philo *philo);
+void		ft_sleep(t_philo *philo);
 void		ft_think(t_philo *philo);
 
 //init
-void			init_philo(t_table *table, t_philo *p);
+void		init_philo(t_table *table, t_philo *p);
 char		*itoa(int index);
 long		ft_atol(char *str);

@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/12 21:41:59 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/27 02:08:58 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/27 21:51:14 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,13 +16,18 @@ void	destroy_philo(t_table *table)
 {
 	t_philo	*philo;
 	int		index;
+	char	*indexed;
 
 	index = -1;
 	philo = table->philo;
-	while(++index < table->philos)
-		kill(table->philo[index].pid_id, SIGKILL),
-		sem_close(table->forks[index]),
-		sem_unlink(itoa(index));
+	while (++index < table->philos)
+	{
+		kill(table->philo[index].pid_id, SIGKILL);
+		sem_close(table->forks[index]);
+		indexed = itoa(index);
+		sem_unlink(indexed);
+		free(indexed);
+	}
 	sem_close(table->log);
 	sem_unlink("sem_log");
 	sem_close(table->the_end);
@@ -32,7 +37,7 @@ void	destroy_philo(t_table *table)
 long long	time_now(void)
 {
 	struct timeval	tv;
-	
+
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
@@ -43,30 +48,27 @@ void	philog(t_philo *philo, const char *action)
 	long long	start;
 	int			id;
 
-	interval = 0;
 	id = philo->id;
 	start = philo->table->start;
 	interval = time_now() - start;
-	sem_wait((philo->table->log));
-	(!philo->table->philo_down) && (printf("%lld %d %s\n", interval, id, action));
+	if (sem_wait((philo->table->log)))
+		err_w("Failed to wait a semaphore");
+	if (!philo->table->philo_down)
+		printf("%lld %d %s\n", interval, id, action);
 	if (*action == 'd')
 	{
 		philo->table->philo_down = 1;
 		return ;
 	}
-	sem_post((philo->table->log));
+	if (sem_post((philo->table->log)))
+		err_w("Sem post failed");
 }
 
-int	smart_sleep(long interval, t_table *table)
+void	smart_sleep(long interval, t_table *table)
 {
 	long long	now;
 
 	now = time_now();
-	while(time_now() - now <= interval)
-	{
-		if (table->philo_down)
-			return (1);
+	while (time_now() - now <= interval)
 		usleep(table->philos * 2);
-	}
-	return (0);
 }

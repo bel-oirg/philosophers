@@ -6,7 +6,7 @@
 /*   By: bel-oirg <bel-oirg@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/03/09 03:23:16 by bel-oirg          #+#    #+#             */
-/*   Updated: 2024/03/27 02:39:34 by bel-oirg         ###   ########.fr       */
+/*   Updated: 2024/03/27 21:09:00 by bel-oirg         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,9 @@ static void	*check_death(void *philo_raw)
 		{
 			philog(philo, DEAD);
 			index = -1;
-			while(++index < table->philos)
-				sem_post(philo->table->the_end);
+			while (++index < table->philos)
+				if (sem_post(philo->table->the_end) == -1)
+					err_w("Sem post failed");
 			break ;
 		}
 		usleep(100);
@@ -44,29 +45,32 @@ static void	begin(t_philo *philo)
 
 	table = philo->table;
 	philo->last_meal = time_now();
-	pthread_create(&monitor_th, NULL, check_death, philo);
-	pthread_detach(monitor_th);
+	if (pthread_create(&monitor_th, NULL, check_death, philo))
+		err_w("Failed to create a thread");
+	if (pthread_detach(monitor_th))
+		err_w("Failed to detach a thread");
 	if (philo->id % 2)
 		usleep(15000);
 	while (1)
 	{
 		ft_eat(philo);
 		if (philo->eated == table->meals)
-			sem_post(table->the_end), exit(0);
+		{
+			if (sem_post(table->the_end) == -1)
+				err_w("Sem post failed");
+			exit(0);
+		}
 		ft_sleep(philo);
 		ft_think(philo);
 	}
 }
-
-//still a problem while eating
-//sometimes it is less
 
 static void	nietzsche_party(t_table *table)
 {
 	t_philo		*philo;
 	int			index;
 	int			forked;
-	
+
 	index = -1;
 	table->start = time_now();
 	philo = table->philo;
@@ -79,9 +83,9 @@ static void	nietzsche_party(t_table *table)
 			philo[index].pid_id = forked;
 	}
 	index = -1;
-	while(++index < table->philos)
-		sem_wait(table->the_end);
-	destroy_philo(table);
+	while (++index < table->philos)
+		if (sem_wait(table->the_end))
+			err_w("Failed to wait a semaphore");
 }
 
 static void	parse_args(char *argv[], t_table *table)
@@ -99,7 +103,7 @@ static void	parse_args(char *argv[], t_table *table)
 		err_w("Enter higher values");
 }
 
-int main(int argc, char *argv[])
+int	main(int argc, char *argv[])
 {
 	t_table		table;
 	t_philo		p[200];
@@ -108,4 +112,5 @@ int main(int argc, char *argv[])
 	parse_args(argv, &table);
 	init_philo(&table, p);
 	nietzsche_party(&table);
+	destroy_philo(&table);
 }
